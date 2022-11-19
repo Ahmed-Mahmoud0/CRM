@@ -1,16 +1,27 @@
 from django.shortcuts import render, redirect
 from .models import Lead, Agent
 from .forms import LeadForm, LeadModelForm
+from django.views.generic import TemplateView, ListView
 
 
-def landing_page(request):
-    return render(request, "landing.html")
+# def landing_page(request):
+#     return render(request, "landing.html")
 
 
-def lead_list(request):
-    leads = Lead.objects.all()
-    context = {"leads": leads}
-    return render(request, "leads/lead_list.html", context)
+class LandingPageView(TemplateView):
+    template_name = "landing.html"
+
+
+# def lead_list(request):
+#     leads = Lead.objects.all()
+#     context = {"leads": leads}
+#     return render(request, "leads/lead_list.html", context)
+
+
+class LeadListView(ListView):
+    template_name = "leads/lead_list.html"
+    queryset = Lead.objects.all()
+    context_object_name = "leads"
 
 
 def lead_detail(request, pk):
