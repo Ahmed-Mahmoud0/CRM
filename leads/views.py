@@ -1,7 +1,24 @@
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import reverse
 from .models import Lead
 from .forms import LeadModelForm
 from django.views import generic
+from django.core.mail import send_mail
+from .forms import CustomUserCreationForm
+from django.contrib.auth.views import LogoutView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+
+class SignupView(generic.CreateView):
+    template_name = "registration/signup.html"
+    form_class = CustomUserCreationForm
+
+    def get_success_url(self):
+        return reverse("login")
+
+
+class LogoutView(LogoutView):
+    def get_success_url(self):
+        return reverse("login")
 
 
 # def landing_page(request):
@@ -18,7 +35,7 @@ class LandingPageView(generic.TemplateView):
 #     return render(request, "leads/lead_list.html", context)
 
 
-class LeadListView(generic.ListView):
+class LeadListView(LoginRequiredMixin, generic.ListView):
     template_name = "leads/lead_list.html"
     queryset = Lead.objects.all()
     context_object_name = "leads"
@@ -30,7 +47,7 @@ class LeadListView(generic.ListView):
 #     return render(request, "leads/lead_detail.html", context)
 
 
-class LeadDetailView(generic.DetailView):
+class LeadDetailView(LoginRequiredMixin, generic.DetailView):
     template_name = "leads/lead_detail.html"
     queryset = Lead.objects.all()
     context_object_name = "lead"
@@ -67,12 +84,22 @@ class LeadDetailView(generic.DetailView):
 #     return render(request, "leads/lead_create.html", context)
 
 
-class LeadCreateView(generic.CreateView):
+class LeadCreateView(LoginRequiredMixin, generic.CreateView):
     template_name = "leads/lead_create.html"
     form_class = LeadModelForm
 
     def get_success_url(self):
         return reverse("leads:lead-list")
+
+    def form_valid(self, form):
+        # TODO: send email
+        send_mail(
+            subject="A New Lead",
+            message="Check the site to see the new lead.",
+            from_email="am161050@gmail.com",
+            recipient_list=["am161050@gmail.com"],
+        )
+        return super(LeadCreateView, self).form_valid(form)
 
 
 # def lead_update(request, pk):
@@ -105,7 +132,7 @@ class LeadCreateView(generic.CreateView):
 #     return render(request, "leads/lead_update.html", context)
 
 
-class LeadUpdateView(generic.UpdateView):
+class LeadUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = "leads/lead_update.html"
     form_class = LeadModelForm
     queryset = Lead.objects.all()
@@ -120,7 +147,7 @@ class LeadUpdateView(generic.UpdateView):
 #     return redirect("/leads")
 
 
-class LeadDeleteView(generic.DeleteView):
+class LeadDeleteView(LoginRequiredMixin, generic.DeleteView):
     template_name = "leads/lead_delete.html"
     queryset = Lead.objects.all()
 
